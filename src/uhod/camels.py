@@ -9,6 +9,35 @@ import numpy as np
 import astropy.table as aTable 
 
 
+def Rockstar(snap, real='LH_0', sim='tng') : 
+    ''' rockstar+consistent tree halo catalogs with assembly history information 
+    '''
+    # rockstar directory 
+    dat_dirs = ['/projects/QUIJOTE/CAMELS/Rockstar/']
+    sims = {'tng': 'IllustrisTNG', 
+            'tng_dm': 'IllustrisTNG_DM', 
+            'simba': 'SIMBA', 
+            'simba_dm': 'SIMBA_DM'} 
+
+    for _dir in dat_dirs: 
+        dat_dir = os.path.join(_dir, sims[sim], real, 'hlists') 
+        if not os.path.isdir(_dir):  
+            continue 
+    
+    asnap = a_snap(snap) 
+    fsnap = 'hlist_%.5f.list' % asnap
+
+    tab = aTable.Table.read(os.path.join(dat_dir, fsnap), format='ascii') 
+    
+    # clean up the column names 
+    for col in tab.colnames: 
+        if '(500c)' in col: 
+            tab.rename_column(col, col.replace('(500c)', '_500c').split('(')[0])
+        else: 
+            tab.rename_column(col, col.split('(')[0])
+    return tab
+
+
 def AHF(snap, real='LH_0', sim='tng'): 
     ''' amiga halo finder given snapshot, realization, and simulation 
     '''
@@ -56,3 +85,13 @@ def z_snap(snap):
             33: 0.
             }
     return z_dict[snap]
+
+
+def a_snap(snap): 
+    ''' scale factor for given snapshot
+    '''
+    a_dict = {
+            32: 0.95332, 
+            33: 1.00000
+            }
+    return a_dict[snap]
